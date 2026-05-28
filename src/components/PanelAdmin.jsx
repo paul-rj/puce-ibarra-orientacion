@@ -35,7 +35,7 @@ const estilos = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '12px'
   },
   input: {
@@ -253,7 +253,7 @@ function PanelAdmin() {
       </div>
 
       {/* Tabla */}
-      <div style={estilos.card}>
+      <div style={{ ...estilos.card, overflowX: 'auto' }}>
         <div style={estilos.cardTitulo}>
           🏛️ Edificios registrados ({edificios.length})
         </div>
