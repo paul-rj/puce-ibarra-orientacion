@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AR - PUCE Ibarra</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      #info-panel {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        text-align: center;
+        z-index: 999;
+        max-width: 90%;
+      }
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        z-index: 1000;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">📍 Obteniendo ubicación GPS...</div>
+    <div id="info-panel">
+      Apunta la cámara hacia los edificios del campus
+    </div>
+
+    <a-scene
+      vr-mode-ui="enabled: false"
+      arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false; trackingMethod: best;"
+      renderer="antialias: true; alpha: true"
+      embedded
+    >
+      <a-camera gps-new-camera="gpsMinDistance: 5"></a-camera>
+    </a-scene>
+
+    <script>
+      const SUPABASE_URL = 'https://uahymywduuozqscibvuq.supabase.co'
+      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhaHlteXdkdXVvenFzY2lidnVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MDU4MjEsImV4cCI6MjA5NDk4MTgyMX0.IX5vWlm_XWa7Dgo2jSAl4VebRVc9AhMC3QmqGTuHPOE'
+
+      async function cargarEdificios() {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/edificios?select=*`,
+          {
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        )
+        return await res.json()
+      }
+
+      async function iniciarAR() {
+        const edificios = await cargarEdificios()
+        const scene = document.querySelector('a-scene')
+        document.getElementById('loading').style.display = 'none'
+
+        edificios.forEach(edificio => {
+          // Contenedor del marcador AR
+          const entidad = document.createElement('a-entity')
+          entidad.setAttribute('gps-new-entity-place', {
+            latitude: edificio.latitud,
+            longitude: edificio.longitud
+          })
+
+          // Caja de fondo de la etiqueta
+          const caja = document.createElement('a-box')
+          caja.setAttribute('color', '#1565c0')
+          caja.setAttribute('opacity', '0.8')
+          caja.setAttribute('width', '4')
+          caja.setAttribute('height', '1.5')
+          caja.setAttribute('depth', '0.1')
+          caja.setAttribute('position', '0 0 0')
+
+          // Texto del nombre del edificio
+          const texto = document.createElement('a-text')
+          texto.setAttribute('value', edificio.nombre)
+          texto.setAttribute('color', 'white')
+          texto.setAttribute('align', 'center')
+          texto.setAttribute('width', '4')
+          texto.setAttribute('position', '0 0.2 0.1')
+
+          // Texto del tipo
+          const subtexto = document.createElement('a-text')
+          subtexto.setAttribute('value', edificio.tipo || '')
+          subtexto.setAttribute('color', '#90caf9')
+          subtexto.setAttribute('align', 'center')
+          subtexto.setAttribute('width', '3')
+          subtexto.setAttribute('position', '0 -0.2 0.1')
+
+          entidad.appendChild(caja)
+          entidad.appendChild(texto)
+          entidad.appendChild(subtexto)
+          scene.appendChild(entidad)
+        })
+
+        document.getElementById('info-panel').textContent =
+          `${edificios.length} edificios cargados — apunta la cámara`
+      }
+
+      // Esperar a que la página cargue antes de iniciar
+      window.addEventListener('load', iniciarAR)
+    </script>
+  </body>
+</html>
