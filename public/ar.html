@@ -4,47 +4,217 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AR - PUCE Ibarra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
     <style>
-      body { margin: 0; overflow: hidden; }
-      #info-panel {
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Outfit', sans-serif; overflow: hidden; background: black; }
+
+      /* Header */
+      #header {
         position: fixed;
-        bottom: 20px;
+        top: 0; left: 0; right: 0;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(13,59,122,0.92), rgba(26,91,191,0.92));
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        z-index: 999;
+        border-bottom: 1px solid rgba(255,255,255,0.15);
+      }
+      #header-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      #header-logo .icono {
+        width: 34px; height: 34px;
+        background: white;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; font-weight: 700;
+        color: #0d3b7a;
+      }
+      #header-logo .texto-header {
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+      #header-logo .subtexto-header {
+        color: rgba(255,255,255,0.65);
+        font-size: 11px;
+        font-weight: 300;
+      }
+      #btn-volver {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        padding: 7px 14px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      /* Panel de estado */
+      #status-panel {
+        position: fixed;
+        top: 72px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(13,59,122,0.85);
+        backdrop-filter: blur(8px);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 500;
+        z-index: 998;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgba(255,255,255,0.2);
+        white-space: nowrap;
+      }
+      #status-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #22c55e;
+        animation: pulso 1.5s infinite;
+      }
+      @keyframes pulso {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.8); }
+      }
+
+      /* Panel de carga */
+      #loading {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(13,59,122,0.92);
+        backdrop-filter: blur(12px);
+        color: white;
+        padding: 30px 40px;
+        border-radius: 20px;
+        z-index: 1000;
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.2);
+        min-width: 260px;
+      }
+      #loading .loading-icono {
+        font-size: 36px;
+        margin-bottom: 12px;
+        animation: bounce 1s infinite;
+      }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+      #loading .loading-titulo {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      #loading .loading-subtitulo {
+        font-size: 13px;
+        color: rgba(255,255,255,0.65);
+        font-weight: 300;
+      }
+
+      /* Barra inferior de instrucciones */
+      #instrucciones {
+        position: fixed;
+        bottom: 24px;
         left: 50%;
         transform: translateX(-50%);
         background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(8px);
         color: white;
-        padding: 12px 20px;
-        border-radius: 10px;
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        text-align: center;
-        z-index: 999;
-        max-width: 90%;
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 400;
+        z-index: 998;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgba(255,255,255,0.15);
       }
-      #loading {
+
+      /* Contador de edificios */
+      #contador {
         position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0,0,0,0.8);
+        bottom: 80px;
+        right: 20px;
+        background: rgba(13,59,122,0.85);
+        backdrop-filter: blur(8px);
         color: white;
-        padding: 20px 30px;
-        border-radius: 10px;
-        font-family: Arial, sans-serif;
-        font-size: 16px;
-        z-index: 1000;
+        padding: 10px 16px;
+        border-radius: 14px;
+        font-size: 13px;
+        font-weight: 600;
+        z-index: 998;
+        border: 1px solid rgba(255,255,255,0.2);
         text-align: center;
+        display: none;
+      }
+      #contador .num {
+        font-size: 22px;
+        font-weight: 700;
+        color: #60a5fa;
+        display: block;
       }
     </style>
   </head>
   <body>
-    <div id="loading">📍 Obteniendo ubicación GPS...</div>
-    <div id="info-panel">
-      Apunta la cámara hacia los edificios del campus
+
+    <!-- Header -->
+    <div id="header">
+      <div id="header-logo">
+        <div class="icono">P</div>
+        <div>
+          <div class="texto-header">Realidad Aumentada</div>
+          <div class="subtexto-header">PUCE Ibarra</div>
+        </div>
+      </div>
+      <a href="/" id="btn-volver">← Volver</a>
     </div>
 
+    <!-- Estado GPS -->
+    <div id="status-panel">
+      <div id="status-dot"></div>
+      <span id="status-texto">Iniciando GPS...</span>
+    </div>
+
+    <!-- Carga -->
+    <div id="loading">
+      <div class="loading-icono">📍</div>
+      <div class="loading-titulo">Obteniendo ubicación</div>
+      <div class="loading-subtitulo">Apunta la cámara hacia los edificios</div>
+    </div>
+
+    <!-- Instrucciones -->
+    <div id="instrucciones">
+      📷 Apunta hacia los edificios del campus
+    </div>
+
+    <!-- Contador -->
+    <div id="contador">
+      <span class="num" id="num-edificios">0</span>
+      edificios
+    </div>
+
+    <!-- Escena AR -->
     <a-scene
       vr-mode-ui="enabled: false"
       arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false; trackingMethod: best;"
@@ -55,8 +225,8 @@
     </a-scene>
 
     <script>
-      const SUPABASE_URL = 'https://uahymywduuozqscibvuq.supabase.co'
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhaHlteXdkdXVvenFzY2lidnVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MDU4MjEsImV4cCI6MjA5NDk4MTgyMX0.IX5vWlm_XWa7Dgo2jSAl4VebRVc9AhMC3QmqGTuHPOE'
+      const SUPABASE_URL = 'TU_PROJECT_URL_AQUI'
+      const SUPABASE_KEY = 'TU_ANON_KEY_AQUI'
 
       async function cargarEdificios() {
         const res = await fetch(
@@ -72,54 +242,73 @@
       }
 
       async function iniciarAR() {
+        document.getElementById('status-texto').textContent = 'Cargando edificios...'
+
         const edificios = await cargarEdificios()
         const scene = document.querySelector('a-scene')
+
         document.getElementById('loading').style.display = 'none'
+        document.getElementById('contador').style.display = 'block'
+        document.getElementById('num-edificios').textContent = edificios.length
+        document.getElementById('status-texto').textContent =
+          `GPS activo · ${edificios.length} edificios`
 
         edificios.forEach(edificio => {
-          // Contenedor del marcador AR
           const entidad = document.createElement('a-entity')
           entidad.setAttribute('gps-new-entity-place', {
             latitude: edificio.latitud,
             longitude: edificio.longitud
           })
 
-          // Caja de fondo de la etiqueta
+          // Fondo de la etiqueta
           const caja = document.createElement('a-box')
-          caja.setAttribute('color', '#1565c0')
-          caja.setAttribute('opacity', '0.8')
-          caja.setAttribute('width', '4')
-          caja.setAttribute('height', '1.5')
-          caja.setAttribute('depth', '0.1')
+          caja.setAttribute('color', '#0d3b7a')
+          caja.setAttribute('opacity', '0.88')
+          caja.setAttribute('width', '5')
+          caja.setAttribute('height', '2')
+          caja.setAttribute('depth', '0.12')
           caja.setAttribute('position', '0 0 0')
 
-          // Texto del nombre del edificio
+          // Línea superior decorativa
+          const linea = document.createElement('a-box')
+          linea.setAttribute('color', '#3b82f6')
+          linea.setAttribute('width', '5')
+          linea.setAttribute('height', '0.12')
+          linea.setAttribute('depth', '0.13')
+          linea.setAttribute('position', '0 0.94 0')
+
+          // Nombre del edificio
           const texto = document.createElement('a-text')
           texto.setAttribute('value', edificio.nombre)
-          texto.setAttribute('color', 'white')
+          texto.setAttribute('color', '#ffffff')
           texto.setAttribute('align', 'center')
-          texto.setAttribute('width', '4')
-          texto.setAttribute('position', '0 0.2 0.1')
+          texto.setAttribute('width', '5')
+          texto.setAttribute('position', '0 0.25 0.07')
+          texto.setAttribute('font', 'https://cdn.aframe.io/fonts/Exo2Bold.fnt')
 
-          // Texto del tipo
-          const subtexto = document.createElement('a-text')
-          subtexto.setAttribute('value', edificio.tipo || '')
-          subtexto.setAttribute('color', '#90caf9')
-          subtexto.setAttribute('align', 'center')
-          subtexto.setAttribute('width', '3')
-          subtexto.setAttribute('position', '0 -0.2 0.1')
+          // Tipo del edificio
+          const tipo = document.createElement('a-text')
+          tipo.setAttribute('value', edificio.tipo || 'Campus PUCE Ibarra')
+          tipo.setAttribute('color', '#93c5fd')
+          tipo.setAttribute('align', 'center')
+          tipo.setAttribute('width', '4')
+          tipo.setAttribute('position', '0 -0.25 0.07')
+
+          // Indicador de distancia (puntito)
+          const punto = document.createElement('a-sphere')
+          punto.setAttribute('color', '#22c55e')
+          punto.setAttribute('radius', '0.15')
+          punto.setAttribute('position', '0 -1.4 0')
 
           entidad.appendChild(caja)
+          entidad.appendChild(linea)
           entidad.appendChild(texto)
-          entidad.appendChild(subtexto)
+          entidad.appendChild(tipo)
+          entidad.appendChild(punto)
           scene.appendChild(entidad)
         })
-
-        document.getElementById('info-panel').textContent =
-          `${edificios.length} edificios cargados — apunta la cámara`
       }
 
-      // Esperar a que la página cargue antes de iniciar
       window.addEventListener('load', iniciarAR)
     </script>
   </body>
