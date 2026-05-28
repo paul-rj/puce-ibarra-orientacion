@@ -18,60 +18,147 @@ function App() {
   }, [vista])
 
   return (
-    <div>
-      <div style={{
-        background: '#1565c0',
-        padding: '12px 20px',
+    <div style={{ minHeight: '100vh', background: '#f0f4f8' }}>
+
+      {/* Header */}
+      <header style={{
+        background: 'linear-gradient(135deg, #0d3b7a 0%, #1a5bbf 100%)',
+        padding: '0 24px',
         display: 'flex',
         alignItems: 'center',
-        gap: '20px'
+        justifyContent: 'space-between',
+        height: '64px',
+        boxShadow: '0 4px 20px rgba(13,59,122,0.25)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
       }}>
-        <h1 style={{ color: 'white', margin: 0, fontSize: '18px' }}>
-          Sistema de Orientación PUCE Ibarra
-        </h1>
-        <button
-          onClick={() => setVista('mapa')}
-          style={{
-            background: vista === 'mapa' ? 'white' : 'transparent',
-            color: vista === 'mapa' ? '#1565c0' : 'white',
-            border: '1px solid white',
-            borderRadius: '6px',
-            padding: '6px 14px',
-            cursor: 'pointer'
-          }}
-        >
-          Mapa
-        </button>
-        <button
-          onClick={() => setVista('admin')}
-          style={{
-            background: vista === 'admin' ? 'white' : 'transparent',
-            color: vista === 'admin' ? '#1565c0' : 'white',
-            border: '1px solid white',
-            borderRadius: '6px',
-            padding: '6px 14px',
-            cursor: 'pointer'
-          }}
-        >
-          Administración
-        </button>
-        <button
-          onClick={() => window.open('/ar.html', '_blank')}
-          style={{
-            background: '#43a047',
-            color: 'white',
-            border: '1px solid white',
-            borderRadius: '6px',
-            padding: '6px 14px',
-            cursor: 'pointer'
-          }}
-        >
-          📷 Realidad Aumentada
-        </button>
-      </div>
+        {/* Logo y título */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '36px', height: '36px',
+            background: 'white',
+            borderRadius: '10px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '18px', fontWeight: '700',
+            color: '#0d3b7a'
+          }}>P</div>
+          <div>
+            <div style={{
+              color: 'white', fontWeight: '600',
+              fontSize: '15px', lineHeight: 1.2
+            }}>
+              Sistema de Orientación
+            </div>
+            <div style={{
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '11px', fontWeight: '300'
+            }}>
+              PUCE Ibarra
+            </div>
+          </div>
+        </div>
 
-      {vista === 'mapa' && <MapaInteractivo edificios={edificios} />}
-      {vista === 'admin' && <PanelAdmin />}
+        {/* Navegación */}
+        <nav style={{ display: 'flex', gap: '8px' }}>
+          {[
+            { id: 'mapa', label: '🗺️ Mapa' },
+            { id: 'admin', label: '⚙️ Admin' },
+          ].map(btn => (
+            <button
+              key={btn.id}
+              onClick={() => setVista(btn.id)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'Outfit, sans-serif',
+                fontWeight: '500',
+                fontSize: '13px',
+                transition: 'all 0.2s',
+                background: vista === btn.id
+                  ? 'white'
+                  : 'rgba(255,255,255,0.15)',
+                color: vista === btn.id ? '#0d3b7a' : 'white',
+              }}
+            >
+              {btn.label}
+            </button>
+          ))}
+          <button
+            onClick={() => window.open('/ar.html', '_blank')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: 'Outfit, sans-serif',
+              fontWeight: '600',
+              fontSize: '13px',
+              background: '#22c55e',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(34,197,94,0.4)'
+            }}
+          >
+            📷 Realidad Aumentada
+          </button>
+        </nav>
+      </header>
+
+      {/* Contenido */}
+      <main>
+        {vista === 'mapa' && (
+          <div>
+            {/* Banner informativo */}
+            <div style={{
+              background: 'white',
+              borderBottom: '1px solid #dbeafe',
+              padding: '16px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              <div style={{
+                background: '#dbeafe',
+                borderRadius: '10px',
+                padding: '10px',
+                fontSize: '24px'
+              }}>🏛️</div>
+              <div>
+                <div style={{
+                  fontWeight: '600', fontSize: '15px',
+                  color: '#0d3b7a'
+                }}>
+                  Mapa interactivo del campus
+                </div>
+                <div style={{
+                  fontSize: '13px', color: '#64748b',
+                  marginTop: '2px'
+                }}>
+                  Haz clic en un marcador para ver información del edificio
+                </div>
+              </div>
+              <div style={{
+                marginLeft: 'auto',
+                background: '#dbeafe',
+                borderRadius: '10px',
+                padding: '8px 16px',
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#1a5bbf'
+              }}>
+                {edificios.length} edificios registrados
+              </div>
+            </div>
+            <MapaInteractivo edificios={edificios} />
+          </div>
+        )}
+        {vista === 'admin' && <PanelAdmin />}
+      </main>
     </div>
   )
 }

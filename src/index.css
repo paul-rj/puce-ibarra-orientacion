@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --azul: #0d3b7a;
+  --azul-medio: #1a5bbf;
+  --azul-claro: #3b82f6;
+  --azul-suave: #dbeafe;
+  --blanco: #ffffff;
+  --gris-claro: #f0f4f8;
+  --gris-texto: #64748b;
+  --sombra: 0 4px 20px rgba(13, 59, 122, 0.12);
+  --sombra-hover: 0 8px 30px rgba(13, 59, 122, 0.2);
+  --radio: 14px;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--gris-claro);
+  color: var(--azul);
+  min-height: 100vh;
+}
