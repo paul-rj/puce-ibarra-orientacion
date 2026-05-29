@@ -8,6 +8,7 @@ function App() {
   const { edificios } = useEdificios()
   const [vista, setVista] = useState('mapa')
   const [menuAbierto, setMenuAbierto] = useState(false)
+  const [ubicacion, setUbicacion] = useState(null)
 
   useEffect(() => {
     function escucharMensaje(e) {
@@ -98,7 +99,13 @@ function App() {
 
       {/* Contenido */}
       <main>
-        {vista === 'mapa' && <MapaInteractivo edificios={edificios} />}
+        {vista === 'mapa' && (
+          <MapaInteractivo
+            edificios={edificios}
+            ubicacion={ubicacion}
+            setUbicacion={setUbicacion}
+          />
+        )}
         {vista === 'admin' && <PanelAdmin />}
         {vista === 'ar' && (
           <iframe
