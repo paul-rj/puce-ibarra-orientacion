@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useEdificios } from './hooks/useEdificios'
 import MapaInteractivo from './components/MapaInteractivo'
 import PanelAdmin from './components/PanelAdmin'
@@ -8,6 +8,14 @@ function App() {
   const { edificios } = useEdificios()
   const [vista, setVista] = useState('mapa')
   const [menuAbierto, setMenuAbierto] = useState(false)
+
+  useEffect(() => {
+    function escucharMensaje(e) {
+      if (e.data === 'volver') setVista('mapa')
+    }
+    window.addEventListener('message', escucharMensaje)
+    return () => window.removeEventListener('message', escucharMensaje)
+  }, [])
 
   return (
     <div>
@@ -36,8 +44,8 @@ function App() {
             </button>
           ))}
           <button
-            className="nav-btn-ar"
-            onClick={() => window.open('/ar.html', '_blank')}
+            className={`nav-btn-ar ${vista === 'ar' ? 'activo' : ''}`}
+            onClick={() => setVista('ar')}
           >
             📷 AR
           </button>
@@ -69,7 +77,7 @@ function App() {
           ))}
           <button
             className="nav-mobile-btn-ar"
-            onClick={() => { window.open('/ar.html', '_blank'); setMenuAbierto(false) }}
+            onClick={() => { setVista('ar'); setMenuAbierto(false) }}
           >
             📷 Realidad Aumentada
           </button>
@@ -92,6 +100,19 @@ function App() {
       <main>
         {vista === 'mapa' && <MapaInteractivo edificios={edificios} />}
         {vista === 'admin' && <PanelAdmin />}
+        {vista === 'ar' && (
+          <iframe
+            src="/ar.html"
+            style={{
+              width: '100%',
+              height: 'calc(100vh - 60px)',
+              border: 'none',
+              display: 'block'
+            }}
+            allow="camera; geolocation"
+            title="Realidad Aumentada"
+          />
+        )}
       </main>
     </div>
   )

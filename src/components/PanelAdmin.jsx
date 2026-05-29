@@ -98,7 +98,7 @@ function PanelAdmin() {
     setTimeout(() => setMensaje({ texto: '', tipo: '' }), 3000)
   }
 
-  // ── LOGIN ────────────────────────────────────────────
+  // ── LOGIN ────────────────────────────────
   if (!admin) {
     return (
       <div className="login-wrapper">
@@ -141,7 +141,7 @@ function PanelAdmin() {
     )
   }
 
-  // ── PANEL ────────────────────────────────────────────
+  // ── PANEL ────────────────────────────────
   return (
     <div className="admin-container">
       <div className="admin-header">
@@ -200,7 +200,10 @@ function PanelAdmin() {
               <button type="button" className="btn-secundario"
                 onClick={() => {
                   setEditandoId(null)
-                  setFormulario({ nombre: '', descripcion: '', latitud: '', longitud: '', tipo: '' })
+                  setFormulario({
+                    nombre: '', descripcion: '',
+                    latitud: '', longitud: '', tipo: ''
+                  })
                 }}>
                 Cancelar
               </button>
