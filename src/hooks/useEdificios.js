@@ -7,11 +7,10 @@ export function useEdificios() {
 
   async function cargarEdificios() {
     setCargando(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('edificios')
       .select('*')
-      .order('nombre')
-    setEdificios(data || [])
+    if (!error) setEdificios(data || [])
     setCargando(false)
   }
 

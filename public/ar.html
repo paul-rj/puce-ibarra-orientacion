@@ -11,64 +11,9 @@
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font-family: 'Outfit', sans-serif; overflow: hidden; background: black; }
 
-      /* Header */
-      #header {
-        position: fixed;
-        top: 0; left: 0; right: 0;
-        height: 60px;
-        background: linear-gradient(135deg, rgba(13,59,122,0.92), rgba(26,91,191,0.92));
-        backdrop-filter: blur(10px);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 20px;
-        z-index: 999;
-        border-bottom: 1px solid rgba(255,255,255,0.15);
-      }
-      #header-logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      #header-logo .icono {
-        width: 34px; height: 34px;
-        background: white;
-        border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 16px; font-weight: 700;
-        color: #0d3b7a;
-      }
-      #header-logo .texto-header {
-        color: white;
-        font-size: 14px;
-        font-weight: 600;
-        line-height: 1.2;
-      }
-      #header-logo .subtexto-header {
-        color: rgba(255,255,255,0.65);
-        font-size: 11px;
-        font-weight: 300;
-      }
-      #btn-volver {
-        background: rgba(255,255,255,0.15);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.3);
-        border-radius: 8px;
-        padding: 7px 14px;
-        font-family: 'Outfit', sans-serif;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      /* Panel de estado */
       #status-panel {
         position: fixed;
-        top: 72px;
+        top: 12px;
         left: 50%;
         transform: translateX(-50%);
         background: rgba(13,59,122,0.85);
@@ -96,7 +41,6 @@
         50% { opacity: 0.5; transform: scale(0.8); }
       }
 
-      /* Panel de carga */
       #loading {
         position: fixed;
         top: 50%; left: 50%;
@@ -111,7 +55,7 @@
         border: 1px solid rgba(255,255,255,0.2);
         min-width: 260px;
       }
-      #loading .loading-icono {
+      .loading-icono {
         font-size: 36px;
         margin-bottom: 12px;
         animation: bounce 1s infinite;
@@ -120,18 +64,13 @@
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-6px); }
       }
-      #loading .loading-titulo {
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 6px;
+      .loading-titulo {
+        font-size: 16px; font-weight: 600; margin-bottom: 6px;
       }
-      #loading .loading-subtitulo {
-        font-size: 13px;
-        color: rgba(255,255,255,0.65);
-        font-weight: 300;
+      .loading-subtitulo {
+        font-size: 13px; color: rgba(255,255,255,0.65); font-weight: 300;
       }
 
-      /* Barra inferior de instrucciones */
       #instrucciones {
         position: fixed;
         bottom: 24px;
@@ -145,81 +84,75 @@
         font-size: 13px;
         font-weight: 400;
         z-index: 998;
-        display: flex;
-        align-items: center;
-        gap: 8px;
         border: 1px solid rgba(255,255,255,0.15);
       }
 
-      /* Contador de edificios */
       #contador {
         position: fixed;
-        bottom: 80px;
-        right: 20px;
+        bottom: 80px; right: 20px;
         background: rgba(13,59,122,0.85);
         backdrop-filter: blur(8px);
         color: white;
         padding: 10px 16px;
         border-radius: 14px;
-        font-size: 13px;
-        font-weight: 600;
+        font-size: 13px; font-weight: 600;
         z-index: 998;
         border: 1px solid rgba(255,255,255,0.2);
         text-align: center;
         display: none;
       }
-      #contador .num {
-        font-size: 22px;
-        font-weight: 700;
-        color: #60a5fa;
-        display: block;
+      .num {
+        font-size: 22px; font-weight: 700;
+        color: #60a5fa; display: block;
+      }
+
+      /* Botón volver flotante */
+      #btn-volver {
+        position: fixed;
+        top: 12px; right: 16px;
+        background: rgba(255,255,255,0.15);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 13px; font-weight: 500;
+        cursor: pointer;
+        z-index: 999;
+        backdrop-filter: blur(8px);
       }
     </style>
   </head>
   <body>
 
-    <!-- Header -->
-    <div id="header">
-      <div id="header-logo">
-        <div class="icono">P</div>
-        <div>
-          <div class="texto-header">Realidad Aumentada</div>
-          <div class="subtexto-header">PUCE Ibarra</div>
-        </div>
-      </div>
-      <a href="/" id="btn-volver">← Volver</a>
-    </div>
-
-    <!-- Estado GPS -->
     <div id="status-panel">
       <div id="status-dot"></div>
       <span id="status-texto">Iniciando GPS...</span>
     </div>
 
-    <!-- Carga -->
+    <button id="btn-volver" onclick="window.parent.postMessage('volver', '*')">← Volver</button>
+
     <div id="loading">
       <div class="loading-icono">📍</div>
       <div class="loading-titulo">Obteniendo ubicación</div>
       <div class="loading-subtitulo">Apunta la cámara hacia los edificios</div>
     </div>
 
-    <!-- Instrucciones -->
     <div id="instrucciones">
       📷 Apunta hacia los edificios del campus
     </div>
 
-    <!-- Contador -->
     <div id="contador">
       <span class="num" id="num-edificios">0</span>
       edificios
     </div>
 
-    <!-- Escena AR -->
     <a-scene
       vr-mode-ui="enabled: false"
       arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false; trackingMethod: best;"
       renderer="antialias: true; alpha: true"
       embedded
+      style="width: 100vw; height: 100vh; position: fixed; top: 0; left: 0;"
     >
       <a-camera gps-new-camera="gpsMinDistance: 5"></a-camera>
     </a-scene>
@@ -243,7 +176,6 @@
 
       async function iniciarAR() {
         document.getElementById('status-texto').textContent = 'Cargando edificios...'
-
         const edificios = await cargarEdificios()
         const scene = document.querySelector('a-scene')
 
@@ -260,16 +192,13 @@
             longitude: edificio.longitud
           })
 
-          // Fondo de la etiqueta
           const caja = document.createElement('a-box')
           caja.setAttribute('color', '#0d3b7a')
           caja.setAttribute('opacity', '0.88')
           caja.setAttribute('width', '5')
           caja.setAttribute('height', '2')
           caja.setAttribute('depth', '0.12')
-          caja.setAttribute('position', '0 0 0')
 
-          // Línea superior decorativa
           const linea = document.createElement('a-box')
           linea.setAttribute('color', '#3b82f6')
           linea.setAttribute('width', '5')
@@ -277,16 +206,13 @@
           linea.setAttribute('depth', '0.13')
           linea.setAttribute('position', '0 0.94 0')
 
-          // Nombre del edificio
           const texto = document.createElement('a-text')
           texto.setAttribute('value', edificio.nombre)
           texto.setAttribute('color', '#ffffff')
           texto.setAttribute('align', 'center')
           texto.setAttribute('width', '5')
           texto.setAttribute('position', '0 0.25 0.07')
-          texto.setAttribute('font', 'https://cdn.aframe.io/fonts/Exo2Bold.fnt')
 
-          // Tipo del edificio
           const tipo = document.createElement('a-text')
           tipo.setAttribute('value', edificio.tipo || 'Campus PUCE Ibarra')
           tipo.setAttribute('color', '#93c5fd')
@@ -294,7 +220,6 @@
           tipo.setAttribute('width', '4')
           tipo.setAttribute('position', '0 -0.25 0.07')
 
-          // Indicador de distancia (puntito)
           const punto = document.createElement('a-sphere')
           punto.setAttribute('color', '#22c55e')
           punto.setAttribute('radius', '0.15')
