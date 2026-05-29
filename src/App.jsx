@@ -51,8 +51,6 @@ function App() {
             📷 AR
           </button>
         </nav>
-
-        {/* Botón hamburguesa */}
         <button
           className="btn-menu"
           onClick={() => setMenuAbierto(!menuAbierto)}
@@ -116,7 +114,8 @@ function App() {
               border: 'none',
               display: 'block'
             }}
-            allow="camera; geolocation"
+            allow="camera *; geolocation *; microphone *"
+            allowFullScreen
             title="Realidad Aumentada"
           />
         )}
