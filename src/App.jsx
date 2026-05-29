@@ -10,14 +10,6 @@ function App() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [ubicacion, setUbicacion] = useState(null)
 
-  useEffect(() => {
-    function escucharMensaje(e) {
-      if (e.data === 'volver') setVista('mapa')
-    }
-    window.addEventListener('message', escucharMensaje)
-    return () => window.removeEventListener('message', escucharMensaje)
-  }, [])
-
   return (
     <div>
       {/* Header */}
@@ -45,12 +37,14 @@ function App() {
             </button>
           ))}
           <button
-            className={`nav-btn-ar ${vista === 'ar' ? 'activo' : ''}`}
-            onClick={() => setVista('ar')}
+            className="nav-btn-ar"
+            onClick={() => window.location.href = '/ar.html'}
           >
             📷 AR
           </button>
         </nav>
+
+        {/* Botón hamburguesa */}
         <button
           className="btn-menu"
           onClick={() => setMenuAbierto(!menuAbierto)}
@@ -76,7 +70,7 @@ function App() {
           ))}
           <button
             className="nav-mobile-btn-ar"
-            onClick={() => { setVista('ar'); setMenuAbierto(false) }}
+            onClick={() => { window.location.href = '/ar.html'; setMenuAbierto(false) }}
           >
             📷 Realidad Aumentada
           </button>
@@ -105,20 +99,6 @@ function App() {
           />
         )}
         {vista === 'admin' && <PanelAdmin />}
-        {vista === 'ar' && (
-          <iframe
-            src="/ar.html"
-            style={{
-              width: '100%',
-              height: 'calc(100vh - 60px)',
-              border: 'none',
-              display: 'block'
-            }}
-            allow="camera *; geolocation *; microphone *"
-            allowFullScreen
-            title="Realidad Aumentada"
-          />
-        )}
       </main>
     </div>
   )
