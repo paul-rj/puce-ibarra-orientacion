@@ -1,0 +1,10 @@
+.mapa-container {
+  width: 100%;
+  height: calc(100vh - 120px);
+}
+
+@media (max-width: 640px) {
+  .mapa-container {
+    height: calc(100vh - 140px);
+  }
+}
