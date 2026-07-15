@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import '../styles/PanelAdmin.css'
+import { LIMITES_CAMPUS, coordenadaValida } from '../config/mapaConfig'
 
 function PanelAdmin() {
   const [admin, setAdmin] = useState(null)
@@ -50,11 +51,23 @@ function PanelAdmin() {
 
   async function guardar(e) {
     e.preventDefault()
+    const latitud = parseFloat(formulario.latitud)
+    const longitud = parseFloat(formulario.longitud)
+
+    if (!coordenadaValida(latitud, longitud)) {
+      setMensaje({
+        texto: `⚠️ Coordenadas fuera del campus. Latitud entre ${LIMITES_CAMPUS.latMin} y ${LIMITES_CAMPUS.latMax}, longitud entre ${LIMITES_CAMPUS.lonMin} y ${LIMITES_CAMPUS.lonMax}.`,
+        tipo: 'error'
+      })
+      setTimeout(() => setMensaje({ texto: '', tipo: '' }), 4000)
+      return
+    }
+
     const datos = {
       nombre: formulario.nombre,
       descripcion: formulario.descripcion,
-      latitud: parseFloat(formulario.latitud),
-      longitud: parseFloat(formulario.longitud),
+      latitud,
+      longitud,
       tipo: formulario.tipo
     }
     if (editandoId) {
@@ -175,10 +188,12 @@ function PanelAdmin() {
                 value={formulario.descripcion} onChange={handleCambio}
                 className="form-input" />
             </div>
-            <input name="latitud" placeholder="Latitud (ej: 0.3521)"
+            <input type="number" name="latitud" placeholder="Latitud (ej: 0.3521)"
+              step="0.000001" min={LIMITES_CAMPUS.latMin} max={LIMITES_CAMPUS.latMax}
               value={formulario.latitud} onChange={handleCambio}
               required className="form-input" />
-            <input name="longitud" placeholder="Longitud (ej: -78.1098)"
+            <input type="number" name="longitud" placeholder="Longitud (ej: -78.1098)"
+              step="0.000001" min={LIMITES_CAMPUS.lonMin} max={LIMITES_CAMPUS.lonMax}
               value={formulario.longitud} onChange={handleCambio}
               required className="form-input" />
             <div className="form-grid-full">

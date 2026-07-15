@@ -5,6 +5,7 @@ import '../styles/MapaInteractivo.css'
 import L from 'leaflet'
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import iconShadow from 'leaflet/dist/images/marker-shadow.png'
+import { CENTRO_CAMPUS, ZOOM_INICIAL, aCoordenada, coordenadaValida } from '../config/mapaConfig'
 
 // Ícono por defecto para edificios
 const iconoPorDefecto = L.icon({
@@ -68,12 +69,15 @@ function UbicacionUsuario({ setUbicacion, ubicacion }) {
 }
 
 function MapaInteractivo({ edificios, ubicacion, setUbicacion }) {
-  const centro = [0.3468, -78.1070]
+
+  const edificiosValidos = edificios.filter(e =>
+    coordenadaValida(e.latitud, e.longitud)
+  )
 
   return (
     <MapContainer
-      center={centro}
-      zoom={18}
+      center={CENTRO_CAMPUS}
+      zoom={ZOOM_INICIAL}
       className="mapa-container"
     >
       <TileLayer
@@ -97,10 +101,10 @@ function MapaInteractivo({ edificios, ubicacion, setUbicacion }) {
       )}
 
       {/* Marcadores de edificios */}
-      {edificios.map(edificio => (
+      {edificiosValidos.map(edificio => (
         <Marker
           key={edificio.id}
-          position={[edificio.latitud, edificio.longitud]}
+          position={[aCoordenada(edificio.latitud), aCoordenada(edificio.longitud)]}
         >
           <Popup>
             <strong>{edificio.nombre}</strong><br />
