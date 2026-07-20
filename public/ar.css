@@ -1,5 +1,35 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Outfit', sans-serif; overflow: hidden; background: black; }
+html, body { width: 100%; height: 100%; }
+body { font-family: 'Outfit', sans-serif; overflow: hidden; background: black; position: fixed; }
+
+/*
+ * AR.js posiciona el <video> de la cámara (#arjs-video) con estilos inline
+ * calculados a mano (asume proporción ~4:3 y centra con márgenes negativos).
+ * En celulares (pantallas altas, distintas proporciones) ese cálculo falla y
+ * dan la sensación de "doble pantalla": el video queda de un tamaño/posición
+ * y el canvas de A-Frame (que sí ocupa toda la pantalla) de otro.
+ * Forzamos ambos a cubrir siempre el viewport completo con !important, que
+ * gana sobre los estilos inline que AR.js recalcula en cada resize.
+ */
+#arjs-video {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  transform: none !important;
+  object-fit: cover !important;
+}
+a-scene, a-scene canvas {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
 
 #status-panel {
   position: fixed;

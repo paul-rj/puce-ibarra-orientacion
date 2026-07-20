@@ -66,6 +66,17 @@ function bucleApuntado() {
   }
 }
 
+// Descripción recortada para el cartel 3D: en el mundo AR un texto muy largo
+// se vuelve ilegible (letras enormes o desbordadas), así que solo mostramos
+// un resumen corto ahí; la descripción completa se ve en el panel de la
+// interfaz (mostrarCartel, en ar-cartel.js).
+function resumenDescripcion(descripcion, maxCaracteres = 90) {
+  if (!descripcion) return 'Sin descripción disponible.'
+  return descripcion.length > maxCaracteres
+    ? `${descripcion.slice(0, maxCaracteres).trim()}…`
+    : descripcion
+}
+
 function crearEntidadEdificio(edificio, scene) {
   const entidad = document.createElement('a-entity')
   entidad.setAttribute('gps-new-entity-place', {
@@ -79,31 +90,40 @@ function crearEntidadEdificio(edificio, scene) {
   caja.setAttribute('color', '#0d3b7a')
   caja.setAttribute('opacity', '0.88')
   caja.setAttribute('width', '5')
-  caja.setAttribute('height', '1.4')
+  caja.setAttribute('height', '2.6')
   caja.setAttribute('depth', '0.12')
 
   const linea = document.createElement('a-box')
   linea.setAttribute('color', '#3b82f6')
   linea.setAttribute('width', '5')
-  linea.setAttribute('height', '0.12')
+  linea.setAttribute('height', '0.08')
   linea.setAttribute('depth', '0.13')
-  linea.setAttribute('position', '0 0.64 0')
+  linea.setAttribute('position', '0 0.55 0')
 
-  const texto = document.createElement('a-text')
-  texto.setAttribute('value', edificio.nombre)
-  texto.setAttribute('color', '#ffffff')
-  texto.setAttribute('align', 'center')
-  texto.setAttribute('width', '4.6')
-  texto.setAttribute('position', '0 0 0.07')
+  const titulo = document.createElement('a-text')
+  titulo.setAttribute('value', edificio.nombre)
+  titulo.setAttribute('color', '#ffffff')
+  titulo.setAttribute('align', 'center')
+  titulo.setAttribute('width', '4.6')
+  titulo.setAttribute('position', '0 0.9 0.07')
+
+  const descripcion = document.createElement('a-text')
+  descripcion.setAttribute('value', resumenDescripcion(edificio.descripcion))
+  descripcion.setAttribute('color', '#dbeafe')
+  descripcion.setAttribute('align', 'center')
+  descripcion.setAttribute('width', '4.3')
+  descripcion.setAttribute('wrap-count', '32')
+  descripcion.setAttribute('position', '0 0.1 0.07')
 
   const punto = document.createElement('a-sphere')
   punto.setAttribute('color', '#22c55e')
   punto.setAttribute('radius', '0.15')
-  punto.setAttribute('position', '0 -1 0')
+  punto.setAttribute('position', '0 -1.9 0')
 
   entidad.appendChild(caja)
   entidad.appendChild(linea)
-  entidad.appendChild(texto)
+  entidad.appendChild(titulo)
+  entidad.appendChild(descripcion)
   entidad.appendChild(punto)
   scene.appendChild(entidad)
 
