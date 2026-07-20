@@ -3,6 +3,9 @@ import { supabase } from '../supabaseClient'
 import '../styles/PanelAdmin.css'
 import { LIMITES_CAMPUS, coordenadaValida } from '../config/mapaConfig'
 
+const TIPOS_EDIFICIO = ['Académico', 'Administrativo', 'Servicios', 'Deportivo']
+const TIPO_OTRO = '__otro__'
+
 function PanelAdmin() {
   const [admin, setAdmin] = useState(null)
   const [email, setEmail] = useState('')
@@ -15,6 +18,7 @@ function PanelAdmin() {
   })
   const [editandoId, setEditandoId] = useState(null)
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' })
+  const [tipoPersonalizado, setTipoPersonalizado] = useState(false)
 
   useEffect(() => {
     if (admin) cargarEdificios()
@@ -47,6 +51,17 @@ function PanelAdmin() {
 
   function handleCambio(e) {
     setFormulario({ ...formulario, [e.target.name]: e.target.value })
+  }
+
+  function handleCambioTipo(e) {
+    const valor = e.target.value
+    if (valor === TIPO_OTRO) {
+      setTipoPersonalizado(true)
+      setFormulario({ ...formulario, tipo: '' })
+    } else {
+      setTipoPersonalizado(false)
+      setFormulario({ ...formulario, tipo: valor })
+    }
   }
 
   async function guardar(e) {
@@ -87,6 +102,7 @@ function PanelAdmin() {
       })
     }
     setFormulario({ nombre: '', descripcion: '', latitud: '', longitud: '', tipo: '' })
+    setTipoPersonalizado(false)
     cargarEdificios()
     setTimeout(() => setMensaje({ texto: '', tipo: '' }), 3000)
   }
@@ -97,6 +113,7 @@ function PanelAdmin() {
       nombre: e.nombre, descripcion: e.descripcion || '',
       latitud: e.latitud, longitud: e.longitud, tipo: e.tipo || ''
     })
+    setTipoPersonalizado(!!e.tipo && !TIPOS_EDIFICIO.includes(e.tipo))
   }
 
   async function eliminar(id) {
@@ -197,15 +214,23 @@ function PanelAdmin() {
               value={formulario.longitud} onChange={handleCambio}
               required className="form-input" />
             <div className="form-grid-full">
-              <select name="tipo" value={formulario.tipo}
-                onChange={handleCambio} className="form-input">
+              <select
+                value={tipoPersonalizado ? TIPO_OTRO : formulario.tipo}
+                onChange={handleCambioTipo} className="form-input">
                 <option value="">Seleccionar tipo</option>
-                <option value="Académico">Académico</option>
-                <option value="Administrativo">Administrativo</option>
-                <option value="Servicios">Servicios</option>
-                <option value="Deportivo">Deportivo</option>
+                {TIPOS_EDIFICIO.map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+                <option value={TIPO_OTRO}>Otro (especificar)</option>
               </select>
             </div>
+            {tipoPersonalizado && (
+              <div className="form-grid-full">
+                <input name="tipo" placeholder="Especifica el tipo (ej: Capilla, Estadio)"
+                  value={formulario.tipo} onChange={handleCambio}
+                  required className="form-input" />
+              </div>
+            )}
           </div>
           <div className="form-acciones">
             <button type="submit" className="btn-primario">
@@ -219,6 +244,7 @@ function PanelAdmin() {
                     nombre: '', descripcion: '',
                     latitud: '', longitud: '', tipo: ''
                   })
+                  setTipoPersonalizado(false)
                 }}>
                 Cancelar
               </button>
