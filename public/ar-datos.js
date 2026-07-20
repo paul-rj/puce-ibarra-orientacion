@@ -49,6 +49,24 @@ async function cargarEdificios() {
   return await res.json()
 }
 
+// Debe coincidir con QR_PREFIJO_AULA de src/config/aulaConfig.js (usado por
+// el panel admin para generar los QR que se imprimen y pegan en las puertas).
+const QR_PREFIJO_AULA = 'PUCEAR:AULA:'
+
+async function cargarAulas() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/aulas?select=*`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      }
+    }
+  )
+  const datos = await res.json()
+  return Array.isArray(datos) ? datos : []
+}
+
 function rastrearUbicacion(onUbicacion) {
   if (!navigator.geolocation) return
   navigator.geolocation.watchPosition(

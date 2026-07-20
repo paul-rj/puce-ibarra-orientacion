@@ -10,8 +10,14 @@ let entidadesEdificios = [] // { edificio, entidad }
 let cartelIdActual = null
 let framesSinObjetivo = 0
 
+// Cuando ar-qr.js detecta un QR de aula, toma control exclusivo del cartel
+// (indoor manda sobre el apuntado por GPS/brújula, que es una guía más
+// aproximada). Ver public/ar-qr.js.
+let qrActivo = false
+
 function bucleApuntado() {
   requestAnimationFrame(bucleApuntado)
+  if (qrActivo) return
 
   const camaraEl = document.querySelector('[gps-new-camera]')
   if (!camaraEl || !camaraEl.object3D || !window.AFRAME) return

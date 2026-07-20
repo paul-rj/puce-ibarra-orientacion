@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
+import QRCode from 'qrcode'
 import { supabase } from '../supabaseClient'
 import '../styles/PanelAdmin.css'
 import { LIMITES_CAMPUS, coordenadaValida } from '../config/mapaConfig'
+import { textoQrAula } from '../config/aulaConfig'
 import Login from './Login'
 
 const TIPOS_EDIFICIO = ['Académico', 'Administrativo', 'Servicios', 'Deportivo']
 const TIPO_OTRO = '__otro__'
+const AULA_VACIA = { edificio_id: '', codigo: '', nombre: '', descripcion: '' }
 
 function PanelAdmin() {
   const [admin, setAdmin] = useState(null)
@@ -17,14 +20,29 @@ function PanelAdmin() {
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' })
   const [tipoPersonalizado, setTipoPersonalizado] = useState(false)
 
+  const [aulas, setAulas] = useState([])
+  const [formularioAula, setFormularioAula] = useState(AULA_VACIA)
+  const [editandoAulaId, setEditandoAulaId] = useState(null)
+  const [mensajeAula, setMensajeAula] = useState({ texto: '', tipo: '' })
+  const [qrVisible, setQrVisible] = useState(null) // { codigo, nombre, dataUrl }
+
   useEffect(() => {
-    if (admin) cargarEdificios()
+    if (admin) {
+      cargarEdificios()
+      cargarAulas()
+    }
   }, [admin])
 
   async function cargarEdificios() {
     const { data } = await supabase
       .from('edificios').select('*').order('nombre')
     setEdificios(data || [])
+  }
+
+  async function cargarAulas() {
+    const { data } = await supabase
+      .from('aulas').select('*').order('codigo')
+    setAulas(data || [])
   }
 
   function handleCambio(e) {
@@ -104,6 +122,72 @@ function PanelAdmin() {
     })
     cargarEdificios()
     setTimeout(() => setMensaje({ texto: '', tipo: '' }), 3000)
+  }
+
+  // ── AULAS (puertas/salones para el AR indoor con QR) ────────────────────
+
+  function handleCambioAula(e) {
+    setFormularioAula({ ...formularioAula, [e.target.name]: e.target.value })
+  }
+
+  async function guardarAula(e) {
+    e.preventDefault()
+    const datos = {
+      edificio_id: formularioAula.edificio_id,
+      codigo: formularioAula.codigo.trim().toUpperCase(),
+      nombre: formularioAula.nombre,
+      descripcion: formularioAula.descripcion
+    }
+    if (editandoAulaId) {
+      const { error } = await supabase
+        .from('aulas').update(datos).eq('id', editandoAulaId)
+      setMensajeAula({
+        texto: error ? `Error al actualizar (${error.message})` : '✅ Aula actualizada',
+        tipo: error ? 'error' : 'ok'
+      })
+      setEditandoAulaId(null)
+    } else {
+      const { error } = await supabase
+        .from('aulas').insert([datos])
+      setMensajeAula({
+        texto: error ? `Error al agregar (${error.message})` : '✅ Aula agregada',
+        tipo: error ? 'error' : 'ok'
+      })
+    }
+    setFormularioAula(AULA_VACIA)
+    cargarAulas()
+    setTimeout(() => setMensajeAula({ texto: '', tipo: '' }), 4000)
+  }
+
+  function editarAula(a) {
+    setEditandoAulaId(a.id)
+    setFormularioAula({
+      edificio_id: a.edificio_id,
+      codigo: a.codigo,
+      nombre: a.nombre,
+      descripcion: a.descripcion || ''
+    })
+  }
+
+  async function eliminarAula(id) {
+    if (!window.confirm('¿Seguro que deseas eliminar esta aula? El QR impreso dejará de funcionar.')) return
+    const { error } = await supabase
+      .from('aulas').delete().eq('id', id)
+    setMensajeAula({
+      texto: error ? 'Error al eliminar' : '✅ Aula eliminada',
+      tipo: error ? 'error' : 'ok'
+    })
+    cargarAulas()
+    setTimeout(() => setMensajeAula({ texto: '', tipo: '' }), 3000)
+  }
+
+  async function mostrarQr(aula) {
+    const dataUrl = await QRCode.toDataURL(textoQrAula(aula.codigo), { width: 280, margin: 2 })
+    setQrVisible({ codigo: aula.codigo, nombre: aula.nombre, dataUrl })
+  }
+
+  function nombreEdificio(id) {
+    return edificios.find(e => e.id === id)?.nombre || '—'
   }
 
   // ── LOGIN ────────────────────────────────
@@ -222,6 +306,101 @@ function PanelAdmin() {
           </tbody>
         </table>
       </div>
+
+      {mensajeAula.texto && (
+        <div className={`mensaje ${mensajeAula.tipo}`}>{mensajeAula.texto}</div>
+      )}
+
+      {/* Formulario aulas */}
+      <div className="card">
+        <div className="card-titulo">
+          {editandoAulaId ? '✏️ Editar aula/puerta' : '➕ Agregar aula/puerta (QR indoor)'}
+        </div>
+        <form onSubmit={guardarAula}>
+          <div className="form-grid">
+            <div className="form-grid-full">
+              <select name="edificio_id" value={formularioAula.edificio_id}
+                onChange={handleCambioAula} required className="form-input">
+                <option value="">Seleccionar edificio</option>
+                {edificios.map(e => (
+                  <option key={e.id} value={e.id}>{e.nombre}</option>
+                ))}
+              </select>
+            </div>
+            <input name="codigo" placeholder="Código único (ej: ED4-P01)"
+              value={formularioAula.codigo} onChange={handleCambioAula}
+              required className="form-input" />
+            <input name="nombre" placeholder="Nombre (ej: Aula de Enfermería)"
+              value={formularioAula.nombre} onChange={handleCambioAula}
+              required className="form-input" />
+            <div className="form-grid-full">
+              <input name="descripcion" placeholder="Descripción de lo que hay ahí"
+                value={formularioAula.descripcion} onChange={handleCambioAula}
+                className="form-input" />
+            </div>
+          </div>
+          <div className="form-acciones">
+            <button type="submit" className="btn-primario">
+              {editandoAulaId ? 'Actualizar' : 'Agregar aula'}
+            </button>
+            {editandoAulaId && (
+              <button type="button" className="btn-secundario"
+                onClick={() => { setEditandoAulaId(null); setFormularioAula(AULA_VACIA) }}>
+                Cancelar
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+
+      {/* Tabla aulas */}
+      <div className="card tabla-wrapper">
+        <div className="card-titulo">
+          🚪 Aulas / puertas registradas ({aulas.length})
+        </div>
+        <table className="tabla">
+          <thead>
+            <tr>
+              {['Edificio', 'Código', 'Nombre', 'Acciones'].map(h => (
+                <th key={h}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {aulas.map(a => (
+              <tr key={a.id}>
+                <td style={{ color: '#64748b' }}>{nombreEdificio(a.edificio_id)}</td>
+                <td><span className="badge-tipo">{a.codigo}</span></td>
+                <td style={{ fontWeight: '600' }}>{a.nombre}</td>
+                <td>
+                  <button className="btn-editar" onClick={() => mostrarQr(a)}>QR</button>
+                  <button className="btn-editar" onClick={() => editarAula(a)}>Editar</button>
+                  <button className="btn-eliminar" onClick={() => eliminarAula(a.id)}>Eliminar</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {qrVisible && (
+        <div className="modal-qr-fondo" onClick={() => setQrVisible(null)}>
+          <div className="modal-qr-tarjeta" onClick={e => e.stopPropagation()}>
+            <div className="card-titulo">{qrVisible.nombre}</div>
+            <img src={qrVisible.dataUrl} alt={`QR de ${qrVisible.nombre}`} width={220} height={220} />
+            <p style={{ fontSize: 13, color: '#64748b', margin: '10px 0' }}>
+              Código: <strong>{qrVisible.codigo}</strong>. Imprime y pega este QR junto a la puerta correspondiente.
+            </p>
+            <div className="form-acciones">
+              <a className="btn-primario" style={{ textDecoration: 'none' }}
+                href={qrVisible.dataUrl} download={`qr-${qrVisible.codigo}.png`}>
+                Descargar PNG
+              </a>
+              <button className="btn-secundario" onClick={() => setQrVisible(null)}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

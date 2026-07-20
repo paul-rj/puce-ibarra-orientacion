@@ -7,15 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="ar.css" rel="stylesheet"/>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <!--
-      IMPORTANT: usar el build "aframe-ar.js" (marker + location based), NO
-      "aframe-ar-nft.js". El build NFT inicializa también el pipeline de
-      tracking por imagen (que no usamos) y es el causante de la doble
-      pantalla / video desalineado que se veía antes. Se fija una versión
-      concreta (en vez de "master") para no depender de cambios futuros de
-      la librería.
-    -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   </head>
   <body>
 
@@ -47,7 +40,7 @@
     </div>
 
     <div id="instrucciones">
-      📷 Apunta hacia los edificios del campus
+      📷 Apunta a un edificio o al QR de una puerta
     </div>
 
     <div id="contador">
@@ -68,5 +61,6 @@
     <script src="ar-datos.js"></script>
     <script src="ar-cartel.js"></script>
     <script src="ar-escena.js"></script>
+    <script src="ar-qr.js"></script>
   </body>
 </html>
