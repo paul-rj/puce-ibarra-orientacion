@@ -2,16 +2,13 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import '../styles/PanelAdmin.css'
 import { LIMITES_CAMPUS, coordenadaValida } from '../config/mapaConfig'
+import Login from './Login'
 
 const TIPOS_EDIFICIO = ['Académico', 'Administrativo', 'Servicios', 'Deportivo']
 const TIPO_OTRO = '__otro__'
 
 function PanelAdmin() {
   const [admin, setAdmin] = useState(null)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [errorLogin, setErrorLogin] = useState('')
-  const [cargandoLogin, setCargandoLogin] = useState(false)
   const [edificios, setEdificios] = useState([])
   const [formulario, setFormulario] = useState({
     nombre: '', descripcion: '', latitud: '', longitud: '', tipo: ''
@@ -23,25 +20,6 @@ function PanelAdmin() {
   useEffect(() => {
     if (admin) cargarEdificios()
   }, [admin])
-
-  async function iniciarSesion(e) {
-    e.preventDefault()
-    setCargandoLogin(true)
-    setErrorLogin('')
-    const { data, error } = await supabase
-      .from('administradores')
-      .select('*')
-      .eq('email', email.trim())
-      .eq('password', password)
-      .single()
-    setCargandoLogin(false)
-    if (error || !data) {
-      setErrorLogin('Correo o contraseña incorrectos.')
-      setPassword('')
-    } else {
-      setAdmin(data)
-    }
-  }
 
   async function cargarEdificios() {
     const { data } = await supabase
@@ -130,45 +108,7 @@ function PanelAdmin() {
 
   // ── LOGIN ────────────────────────────────
   if (!admin) {
-    return (
-      <div className="login-wrapper">
-        <div className="login-card">
-          <div className="login-icono">🔒</div>
-          <h2 className="login-titulo">Acceso restringido</h2>
-          <p className="login-subtitulo">
-            Exclusivo para personal autorizado de la PUCE Ibarra
-          </p>
-          <form className="login-form" onSubmit={iniciarSesion}>
-            <input
-              type="email"
-              placeholder="Correo institucional"
-              value={email}
-              onChange={e => { setEmail(e.target.value); setErrorLogin('') }}
-              required
-              className="form-input"
-            />
-            <input
-              type="password"
-              placeholder="Contraseña"
-              value={password}
-              onChange={e => { setPassword(e.target.value); setErrorLogin('') }}
-              required
-              className={`form-input ${errorLogin ? 'error' : ''}`}
-            />
-            {errorLogin && (
-              <p className="login-error">⚠️ {errorLogin}</p>
-            )}
-            <button
-              type="submit"
-              className="btn-login"
-              disabled={cargandoLogin}
-            >
-              {cargandoLogin ? 'Verificando...' : 'Ingresar'}
-            </button>
-          </form>
-        </div>
-      </div>
-    )
+    return <Login onLogin={setAdmin} />
   }
 
   // ── PANEL ────────────────────────────────
