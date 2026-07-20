@@ -1,0 +1,215 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Outfit', sans-serif; overflow: hidden; background: black; }
+
+#status-panel {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(13,59,122,0.85);
+  backdrop-filter: blur(8px);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  white-space: nowrap;
+}
+#status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulso 1.5s infinite;
+}
+@keyframes pulso {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+#loading {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(13,59,122,0.92);
+  backdrop-filter: blur(12px);
+  color: white;
+  padding: 30px 40px;
+  border-radius: 20px;
+  z-index: 1000;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.2);
+  min-width: 260px;
+}
+.loading-icono {
+  font-size: 36px;
+  margin-bottom: 12px;
+  animation: bounce 1s infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.loading-titulo {
+  font-size: 16px; font-weight: 600; margin-bottom: 6px;
+}
+.loading-subtitulo {
+  font-size: 13px; color: rgba(255,255,255,0.65); font-weight: 300;
+}
+
+#instrucciones {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 400;
+  z-index: 998;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+#instrucciones.oculto {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+  pointer-events: none;
+}
+
+#contador {
+  position: fixed;
+  bottom: 80px; right: 20px;
+  background: rgba(13,59,122,0.85);
+  backdrop-filter: blur(8px);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 14px;
+  font-size: 13px; font-weight: 600;
+  z-index: 998;
+  border: 1px solid rgba(255,255,255,0.2);
+  text-align: center;
+  display: none;
+}
+.num {
+  font-size: 22px; font-weight: 700;
+  color: #60a5fa; display: block;
+}
+
+/* Botón volver flotante */
+#btn-volver {
+  position: fixed;
+  top: 12px; right: 16px;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  z-index: 999;
+  backdrop-filter: blur(8px);
+}
+
+/* Mira de puntería central: da feedback de precisión al apuntar */
+#mira {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px; height: 30px;
+  border: 2px solid rgba(255,255,255,0.55);
+  border-radius: 50%;
+  z-index: 997;
+  pointer-events: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+#mira::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 5px; height: 5px;
+  background: rgba(255,255,255,0.75);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: background 0.2s ease;
+}
+#mira.activa {
+  border-color: #22c55e;
+  transform: translate(-50%, -50%) scale(1.2);
+}
+#mira.activa::after { background: #22c55e; }
+
+/* Cartel informativo del edificio apuntado */
+#cartel-edificio {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  width: min(340px, 88vw);
+  transform: translateX(-50%) translateY(-14px);
+  background: rgba(13,59,122,0.92);
+  backdrop-filter: blur(10px);
+  color: white;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.22);
+  padding: 16px 18px;
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+#cartel-edificio.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.cartel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+#cartel-icono {
+  font-size: 26px;
+  line-height: 1;
+}
+.cartel-header-texto {
+  flex: 1;
+  min-width: 0;
+}
+#cartel-nombre {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#cartel-tipo {
+  font-size: 11px;
+  font-weight: 500;
+  color: #93c5fd;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+#cartel-distancia {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.15);
+  padding: 4px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+#cartel-descripcion {
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.4;
+  color: rgba(255,255,255,0.9);
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: 8px;
+}
