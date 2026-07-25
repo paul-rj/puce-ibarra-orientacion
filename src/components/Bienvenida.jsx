@@ -37,7 +37,7 @@ function Bienvenida() {
         </button>
 
         <img
-          src="/mascota.png"
+          src="/public/mascota-bienvenida.png"
           className="bienvenida-mascota"
         />
 
