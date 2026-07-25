@@ -132,6 +132,24 @@ a-scene, a-scene canvas {
   color: #60a5fa; display: block;
 }
 
+/* Estado de escaneo de QR (diagnóstico visible en pantalla) */
+#qr-debug {
+  position: fixed;
+  bottom: 24px;
+  left: 16px;
+  max-width: 70vw;
+  background: rgba(0,0,0,0.65);
+  color: #93c5fd;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  padding: 6px 10px;
+  border-radius: 8px;
+  z-index: 998;
+  word-break: break-all;
+  display: none;
+}
+#qr-debug.visible { display: block; }
+
 /* Botón volver flotante */
 #btn-volver {
   position: fixed;

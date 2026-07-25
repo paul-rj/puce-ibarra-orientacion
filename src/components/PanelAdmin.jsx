@@ -34,13 +34,9 @@ function PanelAdmin() {
       .from('aulas').select('*').order('codigo')
     setAulas(data || [])
   }
-
-  // ── LOGIN ────────────────────────────────
   if (!admin) {
     return <Login onLogin={setAdmin} />
   }
-
-  // ── PANEL ────────────────────────────────
   return (
     <div className="admin-container">
       <div className="admin-header">
