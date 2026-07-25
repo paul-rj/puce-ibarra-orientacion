@@ -25,6 +25,39 @@
   color: #64748b;
 }
 
+/* Tabs de sección */
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.admin-tab {
+  padding: 10px 20px;
+  background: white;
+  color: #64748b;
+  border: 1.5px solid #dbeafe;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.admin-tab:hover {
+  border-color: #3b82f6;
+  color: #0d3b7a;
+}
+
+.admin-tab.activa {
+  background: linear-gradient(135deg, #0d3b7a, #1a5bbf);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(13,59,122,0.25);
+}
+
 /* Cards */
 .card {
   background: white;

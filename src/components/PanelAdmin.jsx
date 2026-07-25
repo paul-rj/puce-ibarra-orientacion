@@ -5,10 +5,16 @@ import Login from './Login'
 import PanelEdificios from './PanelEdificios'
 import PanelAulas from './PanelAulas'
 
+const SECCIONES = [
+  { id: 'edificios', etiqueta: '🏛️ Edificios' },
+  { id: 'aulas', etiqueta: '🚪 Aulas' }
+]
+
 function PanelAdmin() {
   const [admin, setAdmin] = useState(null)
   const [edificios, setEdificios] = useState([])
   const [aulas, setAulas] = useState([])
+  const [seccion, setSeccion] = useState('edificios')
 
   useEffect(() => {
     if (admin) {
@@ -47,9 +53,25 @@ function PanelAdmin() {
         </button>
       </div>
 
-      <PanelEdificios edificios={edificios} onRecargar={cargarEdificios} />
+      <div className="admin-tabs">
+        {SECCIONES.map(s => (
+          <button
+            key={s.id}
+            className={`admin-tab ${seccion === s.id ? 'activa' : ''}`}
+            onClick={() => setSeccion(s.id)}
+          >
+            {s.etiqueta}
+          </button>
+        ))}
+      </div>
 
-      <PanelAulas edificios={edificios} aulas={aulas} onRecargar={cargarAulas} />
+      {seccion === 'edificios' && (
+        <PanelEdificios edificios={edificios} onRecargar={cargarEdificios} />
+      )}
+
+      {seccion === 'aulas' && (
+        <PanelAulas edificios={edificios} aulas={aulas} onRecargar={cargarAulas} />
+      )}
     </div>
   )
 }
