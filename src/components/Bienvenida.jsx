@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import '../styles/Bienvenida.css'
+import mascota from '../assets/mascota.png'
 
 const CLAVE_SESION = 'puce-bienvenida-vista'
 
@@ -37,7 +38,8 @@ function Bienvenida() {
         </button>
 
         <img
-          src="/src/assets/mascota-bienvenida.png"
+          src={mascota}
+          alt="Mascota de bienvenida"
         />
 
         <div className="bienvenida-titulo">¡Hola! Bienvenido/a a PUCE Ibarra 🐾</div>
