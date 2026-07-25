@@ -16,11 +16,17 @@ let ctxQr = null
 
 function esperarVideoAR() {
   return new Promise(resolve => {
+    const inicio = Date.now()
+    let avisado = false
     const intento = () => {
       const video = document.getElementById('arjs-video')
       if (video && video.readyState >= 2) {
         resolve(video)
       } else {
+        if (!avisado && Date.now() - inicio > 8000) {
+          avisado = true
+          console.warn('[ar-qr] el video de la cámara (#arjs-video) no está listo tras 8s; el escaneo de QR no puede iniciar todavía', { existe: !!video, readyState: video && video.readyState })
+        }
         setTimeout(intento, 300)
       }
     }
@@ -49,8 +55,9 @@ function procesarLecturaQr(video) {
   let resultado = null
   try {
     resultado = leerQrDeFrame(video)
-  } catch {
-    return // videoWidth/Height aún en 0 u otro frame no listo, se reintenta
+  } catch (error) {
+    console.warn('[ar-qr] no se pudo leer el frame de video (se reintenta):', error)
+    return
   }
 
   const codigo = resultado && resultado.data.startsWith(QR_PREFIJO_AULA)
@@ -85,7 +92,10 @@ function procesarLecturaQr(video) {
 async function iniciarQR() {
   const [aulas, edificios] = await Promise.all([cargarAulas(), cargarEdificios()])
 
-  if (!aulas.length) return // no hay aulas cargadas: nada que escanear
+  if (!aulas.length) {
+    console.warn('[ar-qr] no se cargó ninguna aula desde Supabase; el escaneo de QR no se inicia')
+    return
+  }
 
   aulasPorCodigo = {}
   aulas.forEach(a => { aulasPorCodigo[a.codigo] = a })

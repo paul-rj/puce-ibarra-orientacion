@@ -46,6 +46,10 @@ async function cargarEdificios() {
       }
     }
   )
+  if (!res.ok) {
+    console.error('[ar-datos] fallo al cargar edificios desde Supabase:', res.status, await res.text())
+    return []
+  }
   return await res.json()
 }
 
@@ -63,6 +67,10 @@ async function cargarAulas() {
       }
     }
   )
+  if (!res.ok) {
+    console.error('[ar-datos] fallo al cargar aulas desde Supabase:', res.status, await res.text())
+    return []
+  }
   const datos = await res.json()
   return Array.isArray(datos) ? datos : []
 }
