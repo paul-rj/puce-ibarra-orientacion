@@ -46,11 +46,11 @@ function Bienvenida() {
         <div className="bienvenida-titulo">¡Hola! Bienvenido/a a PUCE Ibarra 🐾</div>
 
         <p className="bienvenida-texto">
-          Soy tu guía de campus y estoy acá para que no te pierdas ni el primer día 😄.
+          Soy tu guía de campus y estoy aqui para que no te pierdas tu primer día 😄.
           En esta app vas a encontrar el <strong>mapa interactivo</strong> de todos los
-          edificios y, si querés ponerle un poco de magia, activá la
+          edificios y, si deseas un poco de magia, activá la
           <strong> Realidad Aumentada</strong>: apuntá la cámara a un edificio (o a una
-          puerta con su código QR) y te digo al toque qué es.
+          puerta con su código QR) y te digo que podras encontrar en esta.
         </p>
 
         <button className="bienvenida-boton" onClick={cerrar}>
