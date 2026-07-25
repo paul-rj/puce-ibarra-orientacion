@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useEdificios } from './hooks/useEdificios'
 import MapaInteractivo from './components/MapaInteractivo'
 import PanelAdmin from './components/PanelAdmin'
+import Bienvenida from './components/Bienvenida'
 import './styles/App.css'
 
 function App() {
@@ -12,6 +13,8 @@ function App() {
 
   return (
     <div>
+      <Bienvenida />
+
       {/* Header */}
       <header className="header">
         <div className="header-logo">
