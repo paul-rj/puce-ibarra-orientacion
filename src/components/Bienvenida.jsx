@@ -37,8 +37,7 @@ function Bienvenida() {
         </button>
 
         <img
-          src="/public/mascota-bienvenida.png"
-          className="bienvenida-mascota"
+          src="/src/assets/mascota-bienvenida.png"
         />
 
         <div className="bienvenida-titulo">¡Hola! Bienvenido/a a PUCE Ibarra 🐾</div>
