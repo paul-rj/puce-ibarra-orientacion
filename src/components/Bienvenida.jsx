@@ -43,7 +43,7 @@ function Bienvenida() {
           className="bienvenida-mascota"
         />
 
-        <div className="bienvenida-titulo">¡Hola! Bienvenido/a a PUCE Ibarra 🐾</div>
+        <div className="bienvenida-titulo">¡Hola! Bienvenida/o a PUCE Ibarra 🐾</div>
 
         <p className="bienvenida-texto">
           Soy tu guía de campus y estoy aqui para que no te pierdas tu primer día 😄.
