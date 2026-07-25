@@ -21,6 +21,7 @@ function App() {
         <button
           className="header-logo"
           onClick={() => setVista('mapa')}
+          onDoubleClick={() => setVista('admin')}
           aria-label="Ir al inicio"
         >
           <img src={logo} alt="Logo PUCE Ibarra" className="header-icono" />
@@ -34,7 +35,6 @@ function App() {
         <nav className="nav-desktop">
           {[
             { id: 'mapa', label: '🗺️ Mapa' },
-            { id: 'admin', label: '⚙️ Admin' },
           ].map(btn => (
             <button
               key={btn.id}
@@ -66,7 +66,6 @@ function App() {
         <div className="nav-mobile">
           {[
             { id: 'mapa', label: '🗺️ Mapa' },
-            { id: 'admin', label: '⚙️ Administración' },
           ].map(btn => (
             <button
               key={btn.id}
