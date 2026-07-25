@@ -25,6 +25,9 @@ function PanelAdmin() {
   const [editandoAulaId, setEditandoAulaId] = useState(null)
   const [mensajeAula, setMensajeAula] = useState({ texto: '', tipo: '' })
   const [qrVisible, setQrVisible] = useState(null) // { codigo, nombre, dataUrl }
+  // Mientras esto sea true, elegir un edificio recalcula el código solo.
+  // Se apaga en cuanto el usuario toca el campo código a mano.
+  const [codigoAutoGenerado, setCodigoAutoGenerado] = useState(true)
 
   useEffect(() => {
     if (admin) {
@@ -126,8 +129,37 @@ function PanelAdmin() {
 
   // ── AULAS (puertas/salones para el AR indoor con QR) ────────────────────
 
+  // Genera el próximo código disponible para un edificio, ej: si "Edificio 4"
+  // ya tiene ED4-P01 y ED4-P02 registradas, sugiere ED4-P03.
+  function generarCodigoSugerido(edificioId) {
+    const edificio = edificios.find(e => e.id === edificioId)
+    if (!edificio) return ''
+    const numero = (edificio.nombre.match(/\d+/) || [])[0]
+    const prefijo = numero ? `ED${numero}` : edificio.nombre.slice(0, 3).toUpperCase()
+    const existentes = aulas.filter(a => a.edificio_id === edificioId).length
+    const consecutivo = String(existentes + 1).padStart(2, '0')
+    return `${prefijo}-P${consecutivo}`
+  }
+
   function handleCambioAula(e) {
-    setFormularioAula({ ...formularioAula, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+
+    if (name === 'codigo') {
+      setCodigoAutoGenerado(false)
+      setFormularioAula({ ...formularioAula, codigo: value })
+      return
+    }
+
+    if (name === 'edificio_id') {
+      const siguiente = { ...formularioAula, edificio_id: value }
+      if (!editandoAulaId && codigoAutoGenerado) {
+        siguiente.codigo = generarCodigoSugerido(value)
+      }
+      setFormularioAula(siguiente)
+      return
+    }
+
+    setFormularioAula({ ...formularioAula, [name]: value })
   }
 
   async function guardarAula(e) {
@@ -155,12 +187,14 @@ function PanelAdmin() {
       })
     }
     setFormularioAula(AULA_VACIA)
+    setCodigoAutoGenerado(true)
     cargarAulas()
     setTimeout(() => setMensajeAula({ texto: '', tipo: '' }), 4000)
   }
 
   function editarAula(a) {
     setEditandoAulaId(a.id)
+    setCodigoAutoGenerado(false)
     setFormularioAula({
       edificio_id: a.edificio_id,
       codigo: a.codigo,
@@ -327,7 +361,7 @@ function PanelAdmin() {
                 ))}
               </select>
             </div>
-            <input name="codigo" placeholder="Código único (ej: ED4-P01)"
+            <input name="codigo" placeholder="Código único (se genera solo al elegir edificio)"
               value={formularioAula.codigo} onChange={handleCambioAula}
               required className="form-input" />
             <input name="nombre" placeholder="Nombre (ej: Aula de Enfermería)"
@@ -345,7 +379,11 @@ function PanelAdmin() {
             </button>
             {editandoAulaId && (
               <button type="button" className="btn-secundario"
-                onClick={() => { setEditandoAulaId(null); setFormularioAula(AULA_VACIA) }}>
+                onClick={() => {
+                  setEditandoAulaId(null)
+                  setFormularioAula(AULA_VACIA)
+                  setCodigoAutoGenerado(true)
+                }}>
                 Cancelar
               </button>
             )}
