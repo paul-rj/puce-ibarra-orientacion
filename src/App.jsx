@@ -3,6 +3,7 @@ import { useEdificios } from './hooks/useEdificios'
 import MapaInteractivo from './components/MapaInteractivo'
 import PanelAdmin from './components/PanelAdmin'
 import Bienvenida from './components/Bienvenida'
+import logo from './assets/logo.png'
 import './styles/App.css'
 
 function App() {
@@ -17,13 +18,17 @@ function App() {
 
       {/* Header */}
       <header className="header">
-        <div className="header-logo">
-          <div className="header-icono">P</div>
+        <button
+          className="header-logo"
+          onClick={() => setVista('mapa')}
+          aria-label="Ir al inicio"
+        >
+          <img src={logo} alt="Logo PUCE Ibarra" className="header-icono" />
           <div>
             <div className="header-titulo">Orientación Campus</div>
             <div className="header-subtitulo">PUCE Ibarra</div>
           </div>
-        </div>
+        </button>
 
         {/* Nav desktop */}
         <nav className="nav-desktop">
