@@ -47,7 +47,7 @@ function Bienvenida() {
 
         <p className="bienvenida-texto">
           Soy tu guía de campus y estoy aqui para que no te pierdas tu primer día 😄.
-          En esta app vas a encontrar el <strong>mapa interactivo</strong> de todos los
+          Podras encontrar el <strong>mapa interactivo</strong> de todos los
           edificios y, si deseas un poco de magia, activá la
           <strong> Realidad Aumentada</strong>: apuntá la cámara a un edificio (o a una
           puerta con su código QR) y te digo que podras encontrar en esta.
