@@ -40,6 +40,7 @@ function Bienvenida() {
         <img
           src={mascota}
           alt="Mascota de bienvenida"
+          className="bienvenida-mascota"
         />
 
         <div className="bienvenida-titulo">¡Hola! Bienvenido/a a PUCE Ibarra 🐾</div>

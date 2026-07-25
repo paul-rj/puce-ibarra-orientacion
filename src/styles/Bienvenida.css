@@ -51,7 +51,8 @@
 }
 
 .bienvenida-mascota {
-  width: 170px;
+  width: 110px;
+  max-width: 40%;
   height: auto;
   margin: 4px auto 0;
   display: block;
