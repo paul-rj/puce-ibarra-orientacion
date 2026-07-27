@@ -67,7 +67,7 @@ function bucleApuntado() {
     mejor = { item, distancia }
   })
 
-  actualizarPanelDebug(camaraEl, infoDebug)
+  actualizarPanelDebug(camaraEl, infoDebug, posicionCamara)
 
   if (mejor) {
     framesSinObjetivo = 0
@@ -196,7 +196,7 @@ function asegurarControlPorOrientacion(camaraEl) {
   }
 }
 
-function actualizarPanelDebug(camaraEl, infoDebug) {
+function actualizarPanelDebug(camaraEl, infoDebug, posicionCamara) {
   const ahora = performance.now()
   if (ahora - ultimaActualizacionDebug < 150) return
   ultimaActualizacionDebug = ahora
@@ -221,9 +221,11 @@ function actualizarPanelDebug(camaraEl, infoDebug) {
     })
     .join('\n')
 
+  const posCamTexto = `${posicionCamara.x.toFixed(0)}, ${posicionCamara.z.toFixed(0)}`
+
   panel.textContent =
     `heading (brújula): ${heading}°  eventos=${eventosOrientacion}\n` +
-    `cámara mira (3D): ${azimut}°\n` +
+    `cámara mira (3D): ${azimut}°  cámara pos: ${posCamTexto}\n` +
     `mi ubicación: ${ubicacionTexto}\n` +
     `${filas}`
 }
