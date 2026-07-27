@@ -157,23 +157,28 @@ function crearEntidadEdificio(edificio, scene) {
 // sensor en este dispositivo, en vez de mostrar siempre "—" sin explicación.
 function manejarOrientacion(event) {
   eventosOrientacion++
-  const compassHeading = event.webkitCompassHeading
-  if (typeof compassHeading === 'number') {
-    // iOS Safari: "deviceorientation" no está referenciado al norte real,
-    // pero webkitCompassHeading sí. Reescribimos el alpha que usa AR.js
-    // internamente para que la cámara quede orientada al norte verdadero.
-    headingActual = compassHeading
-    if (controlesOrientacion) {
-      controlesOrientacion.deviceOrientation = {
-        alpha: (360 - compassHeading + 360) % 360,
-        beta: event.beta,
-        gamma: event.gamma,
-      }
+  // iOS Safari entrega "webkitCompassHeading" ya en sentido horario (0=norte).
+  // Android con "deviceorientationabsolute" debería, según el spec, entregar
+  // "alpha" en sentido antihorario (heading = 360 - alpha), pero en la
+  // práctica muchos Chrome/Android lo entregan ya en sentido horario, igual
+  // que una brújula. Por eso tratamos ambos valores igual: si los
+  // tratáramos distinto, norte/sur (y este/oeste) quedan invertidos en la
+  // escena en Android, que es justo el bug que este código corrige.
+  const heading = typeof event.webkitCompassHeading === 'number'
+    ? event.webkitCompassHeading
+    : (typeof event.alpha === 'number' ? event.alpha : null)
+  if (heading == null) return
+
+  headingActual = heading
+  if (controlesOrientacion) {
+    // arjs-device-orientation-controls espera el alpha en sentido
+    // antihorario; lo reescribimos para que la cámara quede orientada al
+    // norte real.
+    controlesOrientacion.deviceOrientation = {
+      alpha: (360 - heading + 360) % 360,
+      beta: event.beta,
+      gamma: event.gamma,
     }
-  } else if (typeof event.alpha === 'number') {
-    // Android con "deviceorientationabsolute": alpha ya está referenciado
-    // al norte real, solo lo convertimos a rumbo de brújula para mostrarlo.
-    headingActual = Math.abs(event.alpha - 360)
   }
 }
 
