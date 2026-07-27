@@ -42,26 +42,35 @@ function bucleApuntado() {
   entidadesEdificios.forEach(item => {
     const obj = item.entidad.object3D
     if (obj.visible === false) return
+    if (!miUbicacion) return
 
-    const posicionEntidad = new THREE.Vector3()
-    obj.getWorldPosition(posicionEntidad)
-    const direccion = posicionEntidad.clone().sub(posicionCamara)
+    // Posicionamos el cartel nosotros mismos con la distancia/rumbo real
+    // (Haversine) entre el GPS ya validado (rastrearUbicacion, ar-datos.js)
+    // y las coordenadas del edificio guardadas en Supabase, en vez de dejar
+    // que gps-new-entity-place lo ubique con el GPS interno de AR.js: ese
+    // GPS interno se quedaba sin actualizar la posición de la cámara,
+    // dejando a los edificios "flotando" en coordenadas absolutas gigantes
+    // que no correspondían a la posición real de la cámara en la escena.
+    const distancia = distanciaMetros(
+      miUbicacion.lat, miUbicacion.lon, item.edificio.latitud, item.edificio.longitud
+    )
+    const rumbo = rumboGrados(
+      miUbicacion.lat, miUbicacion.lon, item.edificio.latitud, item.edificio.longitud
+    )
+    const rumboRad = rumbo * Math.PI / 180
+    const dx = distancia * Math.sin(rumboRad)
+    const dz = -distancia * Math.cos(rumboRad)
+    obj.position.set(posicionCamara.x + dx, obj.position.y, posicionCamara.z + dz)
+
+    const direccion = new THREE.Vector3(dx, 0, dz)
     if (direccion.lengthSq() < 0.0001) return
-    const dx = direccion.x
-    const dz = direccion.z
     direccion.normalize()
 
     const anguloGrados = THREE.MathUtils.radToDeg(adelante.angleTo(direccion))
-    const distancia = miUbicacion
-      ? distanciaMetros(miUbicacion.lat, miUbicacion.lon, item.edificio.latitud, item.edificio.longitud)
-      : null
-    const rumbo = miUbicacion
-      ? rumboGrados(miUbicacion.lat, miUbicacion.lon, item.edificio.latitud, item.edificio.longitud)
-      : null
     infoDebug.push({ nombre: item.edificio.nombre, anguloGrados, distancia, rumbo, dx, dz })
 
     if (anguloGrados >= mejorAngulo) return
-    if (distancia != null && distancia > DISTANCIA_MAXIMA) return
+    if (distancia > DISTANCIA_MAXIMA) return
 
     mejorAngulo = anguloGrados
     mejor = { item, distancia }
@@ -95,10 +104,6 @@ function resumenDescripcion(descripcion, maxCaracteres = 90) {
 
 function crearEntidadEdificio(edificio, scene) {
   const entidad = document.createElement('a-entity')
-  entidad.setAttribute('gps-new-entity-place', {
-    latitude: edificio.latitud,
-    longitude: edificio.longitud
-  })
   // El cartel siempre gira para quedar de frente a la cámara del usuario
   entidad.setAttribute('look-at', '[gps-new-camera]')
 
