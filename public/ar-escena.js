@@ -10,14 +10,10 @@ let entidadesEdificios = [] // { edificio, entidad }
 let cartelIdActual = null
 let framesSinObjetivo = 0
 
-// Diagnóstico temporal de brújula (ver también public/ar.css #compass-debug
-// y el aviso al final de este archivo). Se actualiza cada ~150ms, no cada
-// frame, para no saturar el DOM.
+let brujulaActivada = false
+let headingActual = null // grados 0-360, sentido horario, 0 = norte real
 let ultimaActualizacionDebug = 0
 
-// Cuando ar-qr.js detecta un QR de aula, toma control exclusivo del cartel
-// (indoor manda sobre el apuntado por GPS/brújula, que es una guía más
-// aproximada). Ver public/ar-qr.js.
 let qrActivo = false
 
 function bucleApuntado() {
@@ -26,6 +22,7 @@ function bucleApuntado() {
 
   const camaraEl = document.querySelector('[gps-new-camera]')
   if (!camaraEl || !camaraEl.object3D || !window.AFRAME) return
+  activarBrujula(camaraEl)
   const THREE = AFRAME.THREE
 
   const camObj = camaraEl.object3D
@@ -84,10 +81,6 @@ function bucleApuntado() {
   }
 }
 
-// Descripción recortada para el cartel 3D: en el mundo AR un texto muy largo
-// se vuelve ilegible (letras enormes o desbordadas), así que solo mostramos
-// un resumen corto ahí; la descripción completa se ve en el panel de la
-// interfaz (mostrarCartel, en ar-cartel.js).
 function resumenDescripcion(descripcion, maxCaracteres = 90) {
   if (!descripcion) return 'Sin descripción disponible.'
   return descripcion.length > maxCaracteres
@@ -148,14 +141,31 @@ function crearEntidadEdificio(edificio, scene) {
   entidadesEdificios.push({ edificio, entidad })
 }
 
-// Panel de diagnóstico temporal: muestra el heading crudo que reporta
-// gps-new-camera (brújula) y, para cada edificio, el rumbo real (GPS→GPS)
-// contra el ángulo que el motor AR calcula respecto a hacia dónde mira la
-// cámara. Sirve para confirmar en el celular si la brújula del dispositivo
-// está invertida o desfasada (síntoma: edificios que aparecen intercambiados
-// o que nunca entran en el rango de puntería). Girar el teléfono lentamente
-// en sentido horario debería subir el "heading"; si baja, la brújula está
-// invertida. Quitar esta función y su llamada una vez resuelto el problema.
+function activarBrujula(camaraEl) {
+  if (brujulaActivada) return
+  const orientacion = camaraEl.components['arjs-device-orientation-controls']
+  const controles = orientacion && orientacion._orientationControls
+  if (!controles) return
+  brujulaActivada = true
+
+  const manejarOrientacion = (event) => {
+    const compassHeading = event.webkitCompassHeading
+    if (typeof compassHeading === 'number') {
+      headingActual = compassHeading
+      controles.deviceOrientation = {
+        alpha: (360 - compassHeading + 360) % 360,
+        beta: event.beta,
+        gamma: event.gamma,
+      }
+    } else if (typeof event.alpha === 'number') {
+      headingActual = Math.abs(event.alpha - 360)
+    }
+  }
+
+  window.addEventListener('deviceorientationabsolute', manejarOrientacion)
+  window.addEventListener('deviceorientation', manejarOrientacion)
+}
+
 function actualizarPanelDebug(camaraEl, infoDebug) {
   const ahora = performance.now()
   if (ahora - ultimaActualizacionDebug < 150) return
@@ -165,8 +175,7 @@ function actualizarPanelDebug(camaraEl, infoDebug) {
   if (!panel) return
   panel.classList.add('visible')
 
-  const comp = camaraEl.components && camaraEl.components['gps-new-camera']
-  const heading = comp && typeof comp.heading === 'number' ? comp.heading.toFixed(1) : '—'
+  const heading = headingActual != null ? headingActual.toFixed(1) : '—'
   const ubicacionTexto = miUbicacion
     ? `${miUbicacion.lat.toFixed(6)}, ${miUbicacion.lon.toFixed(6)}`
     : 'esperando GPS...'

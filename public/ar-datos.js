@@ -15,7 +15,6 @@ function coordenadaValida(lat, lon) {
   )
 }
 
-// Distancia real entre dos coordenadas GPS (fórmula de Haversine)
 function distanciaMetros(lat1, lon1, lat2, lon2) {
   const R = 6371000
   const rad = Math.PI / 180
@@ -27,7 +26,7 @@ function distanciaMetros(lat1, lon1, lat2, lon2) {
 }
 
 // Rumbo real (grados, 0=norte, sentido horario) desde un punto GPS a otro.
-// Se usa solo para el panel de diagnóstico de brújula (ver ar-escena.js).
+
 function rumboGrados(lat1, lon1, lat2, lon2) {
   const rad = Math.PI / 180
   const y = Math.sin((lon2 - lon1) * rad) * Math.cos(lat2 * rad)
@@ -85,10 +84,23 @@ async function cargarAulas() {
   return Array.isArray(datos) ? datos : []
 }
 
+// Igual que coordenadaValida, pero usando los límites del mapa (LIMITES_CAMPUS)
+// para descartar lecturas de GPS erráticas: si el celular reporta una posición
+// fuera del campus (rebote de señal, mala precisión, etc.) la ignoramos y
+// seguimos usando la última ubicación válida, en vez de mandar al usuario a un
+// punto que no corresponde a las ubicaciones ya bien colocadas en el mapa.
 function rastrearUbicacion(onUbicacion) {
   if (!navigator.geolocation) return
   navigator.geolocation.watchPosition(
-    (pos) => onUbicacion({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+    (pos) => {
+      const lat = pos.coords.latitude
+      const lon = pos.coords.longitude
+      if (!coordenadaValida(lat, lon)) {
+        console.log('[ar-datos] GPS fuera de los límites del campus, se ignora:', lat, lon)
+        return
+      }
+      onUbicacion({ lat, lon })
+    },
     (error) => console.log('Ubicación no disponible:', error.message),
     { enableHighAccuracy: true }
   )
