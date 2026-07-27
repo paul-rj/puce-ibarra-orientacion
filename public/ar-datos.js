@@ -26,6 +26,16 @@ function distanciaMetros(lat1, lon1, lat2, lon2) {
   return 2 * R * Math.asin(Math.sqrt(a))
 }
 
+// Rumbo real (grados, 0=norte, sentido horario) desde un punto GPS a otro.
+// Se usa solo para el panel de diagnóstico de brújula (ver ar-escena.js).
+function rumboGrados(lat1, lon1, lat2, lon2) {
+  const rad = Math.PI / 180
+  const y = Math.sin((lon2 - lon1) * rad) * Math.cos(lat2 * rad)
+  const x = Math.cos(lat1 * rad) * Math.sin(lat2 * rad) -
+    Math.sin(lat1 * rad) * Math.cos(lat2 * rad) * Math.cos((lon2 - lon1) * rad)
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360
+}
+
 const ICONOS_TIPO = {
   'Académico': '📚',
   'Administrativo': '🏢',

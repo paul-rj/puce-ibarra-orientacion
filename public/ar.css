@@ -150,6 +150,30 @@ a-scene, a-scene canvas {
 }
 #qr-debug.visible { display: block; }
 
+/*
+ * Diagnóstico temporal de brújula/GPS: muestra el heading crudo que reporta
+ * gps-new-camera y el ángulo calculado hacia cada edificio, para detectar en
+ * el propio celular si la brújula está invertida (ver public/ar-escena.js).
+ * Quitar este bloque y su script una vez confirmado/corregido el problema.
+ */
+#compass-debug {
+  position: fixed;
+  top: 56px;
+  left: 16px;
+  max-width: 80vw;
+  background: rgba(0,0,0,0.7);
+  color: #86efac;
+  font-size: 10.5px;
+  line-height: 1.5;
+  font-family: 'Courier New', monospace;
+  padding: 8px 10px;
+  border-radius: 8px;
+  z-index: 998;
+  white-space: pre;
+  display: none;
+}
+#compass-debug.visible { display: block; }
+
 /* Botón volver flotante */
 #btn-volver {
   position: fixed;

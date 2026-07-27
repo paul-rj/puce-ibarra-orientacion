@@ -10,6 +10,11 @@ let entidadesEdificios = [] // { edificio, entidad }
 let cartelIdActual = null
 let framesSinObjetivo = 0
 
+// Diagnóstico temporal de brújula (ver también public/ar.css #compass-debug
+// y el aviso al final de este archivo). Se actualiza cada ~150ms, no cada
+// frame, para no saturar el DOM.
+let ultimaActualizacionDebug = 0
+
 // Cuando ar-qr.js detecta un QR de aula, toma control exclusivo del cartel
 // (indoor manda sobre el apuntado por GPS/brújula, que es una guía más
 // aproximada). Ver public/ar-qr.js.
@@ -32,6 +37,7 @@ function bucleApuntado() {
 
   let mejor = null
   let mejorAngulo = ANGULO_MAXIMO
+  const infoDebug = []
 
   entidadesEdificios.forEach(item => {
     const obj = item.entidad.object3D
@@ -44,16 +50,22 @@ function bucleApuntado() {
     direccion.normalize()
 
     const anguloGrados = THREE.MathUtils.radToDeg(adelante.angleTo(direccion))
-    if (anguloGrados >= mejorAngulo) return
-
     const distancia = miUbicacion
       ? distanciaMetros(miUbicacion.lat, miUbicacion.lon, item.edificio.latitud, item.edificio.longitud)
       : null
+    const rumbo = miUbicacion
+      ? rumboGrados(miUbicacion.lat, miUbicacion.lon, item.edificio.latitud, item.edificio.longitud)
+      : null
+    infoDebug.push({ nombre: item.edificio.nombre, anguloGrados, distancia, rumbo })
+
+    if (anguloGrados >= mejorAngulo) return
     if (distancia != null && distancia > DISTANCIA_MAXIMA) return
 
     mejorAngulo = anguloGrados
     mejor = { item, distancia }
   })
+
+  actualizarPanelDebug(camaraEl, infoDebug)
 
   if (mejor) {
     framesSinObjetivo = 0
@@ -134,6 +146,45 @@ function crearEntidadEdificio(edificio, scene) {
   scene.appendChild(entidad)
 
   entidadesEdificios.push({ edificio, entidad })
+}
+
+// Panel de diagnóstico temporal: muestra el heading crudo que reporta
+// gps-new-camera (brújula) y, para cada edificio, el rumbo real (GPS→GPS)
+// contra el ángulo que el motor AR calcula respecto a hacia dónde mira la
+// cámara. Sirve para confirmar en el celular si la brújula del dispositivo
+// está invertida o desfasada (síntoma: edificios que aparecen intercambiados
+// o que nunca entran en el rango de puntería). Girar el teléfono lentamente
+// en sentido horario debería subir el "heading"; si baja, la brújula está
+// invertida. Quitar esta función y su llamada una vez resuelto el problema.
+function actualizarPanelDebug(camaraEl, infoDebug) {
+  const ahora = performance.now()
+  if (ahora - ultimaActualizacionDebug < 150) return
+  ultimaActualizacionDebug = ahora
+
+  const panel = document.getElementById('compass-debug')
+  if (!panel) return
+  panel.classList.add('visible')
+
+  const comp = camaraEl.components && camaraEl.components['gps-new-camera']
+  const heading = comp && typeof comp.heading === 'number' ? comp.heading.toFixed(1) : '—'
+  const ubicacionTexto = miUbicacion
+    ? `${miUbicacion.lat.toFixed(6)}, ${miUbicacion.lon.toFixed(6)}`
+    : 'esperando GPS...'
+
+  const filas = infoDebug
+    .slice()
+    .sort((a, b) => a.anguloGrados - b.anguloGrados)
+    .map(info => {
+      const rumbo = info.rumbo != null ? `${info.rumbo.toFixed(0)}°` : '—'
+      const dist = info.distancia != null ? `${Math.round(info.distancia)}m` : '—'
+      return `${info.nombre.padEnd(14)} ang=${info.anguloGrados.toFixed(0).padStart(3)}° rumbo=${rumbo.padStart(4)} dist=${dist}`
+    })
+    .join('\n')
+
+  panel.textContent =
+    `heading (brújula): ${heading}°\n` +
+    `mi ubicación: ${ubicacionTexto}\n` +
+    `${filas}`
 }
 
 async function iniciarAR() {
