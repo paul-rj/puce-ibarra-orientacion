@@ -10,8 +10,10 @@ let entidadesEdificios = [] // { edificio, entidad }
 let cartelIdActual = null
 let framesSinObjetivo = 0
 
-let brujulaActivada = false
+let controlesOrientacion = null // instancia interna de arjs-device-orientation-controls, una vez encontrada
 let headingActual = null // grados 0-360, sentido horario, 0 = norte real
+let eventosOrientacion = 0 // cuántos eventos deviceorientation llegaron (diagnóstico)
+let azimutCamara = null // grados 0-360: hacia dónde mira realmente la cámara en la escena 3D
 let ultimaActualizacionDebug = 0
 
 let qrActivo = false
@@ -22,7 +24,7 @@ function bucleApuntado() {
 
   const camaraEl = document.querySelector('[gps-new-camera]')
   if (!camaraEl || !camaraEl.object3D || !window.AFRAME) return
-  activarBrujula(camaraEl)
+  asegurarControlPorOrientacion(camaraEl)
   const THREE = AFRAME.THREE
 
   const camObj = camaraEl.object3D
@@ -31,6 +33,7 @@ function bucleApuntado() {
   const adelante = new THREE.Vector3(0, 0, -1).applyQuaternion(rotacionCamara)
   const posicionCamara = new THREE.Vector3()
   camObj.getWorldPosition(posicionCamara)
+  azimutCamara = ((Math.atan2(adelante.x, -adelante.z) * 180 / Math.PI) + 360) % 360
 
   let mejor = null
   let mejorAngulo = ANGULO_MAXIMO
@@ -44,6 +47,8 @@ function bucleApuntado() {
     obj.getWorldPosition(posicionEntidad)
     const direccion = posicionEntidad.clone().sub(posicionCamara)
     if (direccion.lengthSq() < 0.0001) return
+    const dx = direccion.x
+    const dz = direccion.z
     direccion.normalize()
 
     const anguloGrados = THREE.MathUtils.radToDeg(adelante.angleTo(direccion))
@@ -53,7 +58,7 @@ function bucleApuntado() {
     const rumbo = miUbicacion
       ? rumboGrados(miUbicacion.lat, miUbicacion.lon, item.edificio.latitud, item.edificio.longitud)
       : null
-    infoDebug.push({ nombre: item.edificio.nombre, anguloGrados, distancia, rumbo })
+    infoDebug.push({ nombre: item.edificio.nombre, anguloGrados, distancia, rumbo, dx, dz })
 
     if (anguloGrados >= mejorAngulo) return
     if (distancia != null && distancia > DISTANCIA_MAXIMA) return
@@ -141,29 +146,54 @@ function crearEntidadEdificio(edificio, scene) {
   entidadesEdificios.push({ edificio, entidad })
 }
 
-function activarBrujula(camaraEl) {
-  if (brujulaActivada) return
-  const orientacion = camaraEl.components['arjs-device-orientation-controls']
-  const controles = orientacion && orientacion._orientationControls
-  if (!controles) return
-  brujulaActivada = true
-
-  const manejarOrientacion = (event) => {
-    const compassHeading = event.webkitCompassHeading
-    if (typeof compassHeading === 'number') {
-      headingActual = compassHeading
-      controles.deviceOrientation = {
+// Escucha el sensor de orientación directamente, sin depender de que AR.js
+// haya logrado engancharse a él. Así el panel de diagnóstico puede mostrar
+// "eventos brújula" y confirmar si el navegador realmente entrega datos del
+// sensor en este dispositivo, en vez de mostrar siempre "—" sin explicación.
+function manejarOrientacion(event) {
+  eventosOrientacion++
+  const compassHeading = event.webkitCompassHeading
+  if (typeof compassHeading === 'number') {
+    // iOS Safari: "deviceorientation" no está referenciado al norte real,
+    // pero webkitCompassHeading sí. Reescribimos el alpha que usa AR.js
+    // internamente para que la cámara quede orientada al norte verdadero.
+    headingActual = compassHeading
+    if (controlesOrientacion) {
+      controlesOrientacion.deviceOrientation = {
         alpha: (360 - compassHeading + 360) % 360,
         beta: event.beta,
         gamma: event.gamma,
       }
-    } else if (typeof event.alpha === 'number') {
-      headingActual = Math.abs(event.alpha - 360)
     }
+  } else if (typeof event.alpha === 'number') {
+    // Android con "deviceorientationabsolute": alpha ya está referenciado
+    // al norte real, solo lo convertimos a rumbo de brújula para mostrarlo.
+    headingActual = Math.abs(event.alpha - 360)
   }
+}
 
+function iniciarBrujula() {
   window.addEventListener('deviceorientationabsolute', manejarOrientacion)
   window.addEventListener('deviceorientation', manejarOrientacion)
+}
+
+// gps-new-camera solo activa su propio control por orientación del
+// dispositivo ("arjs-device-orientation-controls") cuando su detección de
+// "es celular" por user-agent da positivo; si falla, la cámara queda
+// controlada por look-controls, que solo gira al arrastrar la pantalla con
+// el dedo (por eso los edificios parecen "congelados" al caminar con el
+// celular en la mano). Forzamos el control por orientación nosotros mismos
+// para no depender de esa detección.
+function asegurarControlPorOrientacion(camaraEl) {
+  if (controlesOrientacion) return
+  if (!camaraEl.components['arjs-device-orientation-controls']) {
+    camaraEl.setAttribute('look-controls-enabled', false)
+    camaraEl.setAttribute('arjs-device-orientation-controls', true)
+  }
+  const orientacion = camaraEl.components['arjs-device-orientation-controls']
+  if (orientacion && orientacion._orientationControls) {
+    controlesOrientacion = orientacion._orientationControls
+  }
 }
 
 function actualizarPanelDebug(camaraEl, infoDebug) {
@@ -176,6 +206,7 @@ function actualizarPanelDebug(camaraEl, infoDebug) {
   panel.classList.add('visible')
 
   const heading = headingActual != null ? headingActual.toFixed(1) : '—'
+  const azimut = azimutCamara != null ? azimutCamara.toFixed(0) : '—'
   const ubicacionTexto = miUbicacion
     ? `${miUbicacion.lat.toFixed(6)}, ${miUbicacion.lon.toFixed(6)}`
     : 'esperando GPS...'
@@ -186,17 +217,19 @@ function actualizarPanelDebug(camaraEl, infoDebug) {
     .map(info => {
       const rumbo = info.rumbo != null ? `${info.rumbo.toFixed(0)}°` : '—'
       const dist = info.distancia != null ? `${Math.round(info.distancia)}m` : '—'
-      return `${info.nombre.padEnd(14)} ang=${info.anguloGrados.toFixed(0).padStart(3)}° rumbo=${rumbo.padStart(4)} dist=${dist}`
+      return `${info.nombre.padEnd(14)} ang=${info.anguloGrados.toFixed(0).padStart(3)}° rumbo=${rumbo.padStart(4)} dist=${dist} dx=${info.dx.toFixed(0)} dz=${info.dz.toFixed(0)}`
     })
     .join('\n')
 
   panel.textContent =
-    `heading (brújula): ${heading}°\n` +
+    `heading (brújula): ${heading}°  eventos=${eventosOrientacion}\n` +
+    `cámara mira (3D): ${azimut}°\n` +
     `mi ubicación: ${ubicacionTexto}\n` +
     `${filas}`
 }
 
 async function iniciarAR() {
+  iniciarBrujula()
   rastrearUbicacion((ubicacion) => { miUbicacion = ubicacion })
   document.getElementById('status-texto').textContent = 'Cargando edificios...'
   const edificiosCrudos = await cargarEdificios()
